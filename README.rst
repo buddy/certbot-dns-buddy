@@ -6,7 +6,7 @@ Buddy DNS Authenticator plugin for Certbot
 This plugin automates the process of completing a ``dns-01`` challenge by
 creating, and subsequently removing, TXT records using the Buddy Rest API.
 
-Configuring of Buddy
+Issue a token
 --------------------
 
 In your Buddy account create personal access token with scopes:
@@ -17,6 +17,7 @@ Installation
 ------------
 
 .. code-block:: bash
+
     pip install certbot-dns-buddy
 
 Usage
@@ -26,6 +27,7 @@ Via environment variable
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
+
   export BUDDY_TOKEN=xxx
   # if you want to use different region than US
   export BUDDY_BASE_URL=https://api.eu.buddy.works
@@ -45,6 +47,7 @@ including for renewal, and cannot be silenced except by addressing the issue
 (e.g., by using a command like ``chmod 600`` to restrict access to the file).
 
 ===================================  ==========================================
+
 ``--authenticator dns-buddy``        select the authenticator plugin (Required)
 ``--dns-buddy-credentials``          Buddy Token credentials
                                      INI file. (Required)
