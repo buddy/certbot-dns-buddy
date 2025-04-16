@@ -29,7 +29,7 @@ class Authenticator(dns_common.DNSAuthenticator):
     @classmethod
     def add_parser_arguments(cls, add, **kwargs):
         super(Authenticator, cls).add_parser_arguments(
-            add, default_propagation_seconds=120
+            add, default_propagation_seconds=60
         )
         add("credentials", help="Buddy credentials INI file")
 
@@ -102,10 +102,12 @@ class _ApiClient:
         url = self.base_url + url
         logger.debug("%s %s", method, url)
         with self.session.request(method, url, json=payload) as res:
-            try:
-                result = res.json()
-            except json.decoder.JSONDecodeError:
-                raise errors.PluginError("no JSON in API response")
+            result = {}
+            if method != "DELETE":
+                try:
+                    result = res.json()
+                except json.decoder.JSONDecodeError:
+                    raise errors.PluginError("no JSON in API response")
             if res.status_code == requests.codes.ok:
                 return result
             if result["errors"]:
