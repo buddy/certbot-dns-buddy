@@ -11,7 +11,9 @@ Issue a token
 
 In your Buddy account create personal access token with scopes:
 
-- TODO
+- WORKSPACE
+- ZONE_WRITE
+- ZONE_READ
 
 Installation
 ------------
@@ -29,6 +31,8 @@ Via environment variable
 .. code-block:: bash
 
   export BUDDY_TOKEN=xxx
+  # pass workspace url domain
+  export BUDDY_WORKSPACE=yyy
   # if you want to use different region than US
   export BUDDY_BASE_URL=https://api.eu.buddy.works
   certbot certonly \
@@ -58,6 +62,7 @@ An example ``credentials.ini`` file:
 .. code-block:: ini
 
    dns_buddy_token = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+   dns_buddy_workspace = YYY
    dns_buddy_base_url = https://api.eu.buddy.works
 
 To start using DNS authentication for Buddy, pass the following arguments on certbot's command line:
@@ -86,3 +91,4 @@ token:
 .. code-block:: bash
 
    Environment="BUDDY_TOKEN=<YOUR_API_TOKEN>"
+   Environment="BUDDY_WORKSPACE=<YOUR_API_TOKEN>"

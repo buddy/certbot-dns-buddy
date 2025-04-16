@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "certbot-dns-buddy"
+version = "1.0.0"
+dependencies = [
+    "certbot>=0.31.0",
+    "setuptools",
+    "requests",
+    "requests-mock"
+]
+authors = [
+  { name="Michal Hankus" },
+]
+description = "Buddy DNS Authenticator plugin for Certbot"
+readme = "README.rst"
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Plugins",
+]
+license = "Apache-2.0"
+license-files = ["LICENSE"]
