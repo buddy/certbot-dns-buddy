@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "certbot-dns-buddy"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
     "certbot>=0.31.0",
     "setuptools",
@@ -23,3 +23,5 @@ classifiers = [
 ]
 license = "Apache-2.0"
 license-files = ["LICENSE"]
+[project.entry-points."certbot.plugins"]
+dns-buddy = "certbot_dns_buddy.dns_buddy:Authenticator"
