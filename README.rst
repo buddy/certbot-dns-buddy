@@ -33,6 +33,8 @@ Via environment variable
   export BUDDY_TOKEN=xxx
   # pass workspace url domain
   export BUDDY_WORKSPACE=yyy
+  # pass domain id
+  export BUDDY_DOMAIN_ID=zzz
   # if you want to use different region than US
   export BUDDY_BASE_URL=https://api.eu.buddy.works
   certbot certonly \
@@ -63,6 +65,7 @@ An example ``credentials.ini`` file:
 
    dns_buddy_token = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    dns_buddy_workspace = YYY
+   dns_buddy_domain_id = ZZZ
    dns_buddy_base_url = https://api.eu.buddy.works
 
 To start using DNS authentication for Buddy, pass the following arguments on certbot's command line:
@@ -92,3 +95,4 @@ token:
 
    Environment="BUDDY_TOKEN=<YOUR_API_TOKEN>"
    Environment="BUDDY_WORKSPACE=<YOUR_API_TOKEN>"
+   Environment="BUDDY_DOMAIN_ID=<YOUR_DOMAIN_ID>"

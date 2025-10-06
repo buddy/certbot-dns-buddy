@@ -1,15 +1,10 @@
 """Tests for certbot_dns_buddy.dns_buddy."""
 
-import unittest
-
-import logging
-from unittest import mock
-import requests_mock
-
-import sys
 import io
+import logging
+import sys
+from unittest import mock
 
-from certbot.errors import PluginError
 try:
     import certbot.compat.os as os
 except ImportError:
@@ -17,13 +12,14 @@ except ImportError:
 from certbot.plugins import dns_test_common
 from certbot.plugins.dns_test_common import DOMAIN
 from certbot.tests import util as test_util
-from certbot_dns_buddy.dns_buddy import _ApiClient
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 FAKE_TOKEN = "XXXX"
 FAKE_BASE_URL = "https://foo.bar"
+FAKE_WORKSPACE = "ZZZZ"
+FAKE_DOMAIN_ID = "YYYY"
 
 class AuthenticatorTest(test_util.TempDirTestCase, dns_test_common.BaseAuthenticatorTest):
     """Class to test the Authenticator."""
@@ -34,6 +30,8 @@ class AuthenticatorTest(test_util.TempDirTestCase, dns_test_common.BaseAuthentic
 
         os.environ["BUDDY_TOKEN"] = FAKE_TOKEN
         os.environ["BUDDY_BASE_URL"] = FAKE_BASE_URL
+        os.environ["BUDDY_WORKSPACE"] = FAKE_WORKSPACE
+        os.environ["BUDDY_DOMAIN_ID"] = FAKE_DOMAIN_ID
 
         from certbot_dns_buddy.dns_buddy import Authenticator
         self.auth = Authenticator(self.config, "buddy")
@@ -57,7 +55,7 @@ class AuthenticatorTest(test_util.TempDirTestCase, dns_test_common.BaseAuthentic
         """Tests the perform function to see if client method is called"""
         self.auth.perform([self.achall])
         expected = [
-            mock.call.add_txt_record(DOMAIN, "_acme-challenge." + DOMAIN, mock.ANY)
+            mock.call.add_txt_record("_acme-challenge." + DOMAIN, mock.ANY)
         ]
         self.assertEqual(expected, self.mock_client.mock_calls)
 
@@ -66,6 +64,6 @@ class AuthenticatorTest(test_util.TempDirTestCase, dns_test_common.BaseAuthentic
         self.auth._attempt_cleanup = True
         self.auth.cleanup([self.achall])
         expected = [
-            mock.call.del_txt_record(DOMAIN, "_acme-challenge." + DOMAIN, mock.ANY)
+            mock.call.del_txt_record("_acme-challenge." + DOMAIN, mock.ANY)
         ]
         self.assertEqual(expected, self.mock_client.mock_calls)

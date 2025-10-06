@@ -24,6 +24,7 @@ class Authenticator(dns_common.DNSAuthenticator):
         self.token = ""
         self.base_url = ""
         self.workspace = ""
+        self.domain_id = ""
         self.credentials = None
 
     @classmethod
@@ -40,6 +41,7 @@ class Authenticator(dns_common.DNSAuthenticator):
         token = os.getenv("BUDDY_TOKEN")
         base_url = os.getenv("BUDDY_BASE_URL")
         workspace = os.getenv("BUDDY_WORKSPACE")
+        domain_id = os.getenv("BUDDY_DOMAIN_ID")
         if token is None:
             self.credentials = self._configure_credentials(
                 "credentials",
@@ -51,15 +53,19 @@ class Authenticator(dns_common.DNSAuthenticator):
             token = self.credentials.conf("token")
             workspace = self.credentials.conf("workspace")
             base_url = self.credentials.conf("base_url")
+            domain_id = self.credentials.conf("domain_id")
         if token is None:
             raise errors.PluginError("Buddy API token not defined")
         if workspace is None:
             raise errors.PluginError("Buddy workspace not defined")
+        if domain_id is None:
+            raise errors.PluginError("Buddy domain id not defined")
         if base_url is None:
             base_url = "https://api.buddy.works"
         self.token = token
         self.base_url = base_url
         self.workspace = workspace
+        self.domain_id = domain_id
 
     def _perform(self, domain, validation_name, validation):
         try:
@@ -74,20 +80,22 @@ class Authenticator(dns_common.DNSAuthenticator):
             raise errors.PluginError("Cannot remove txt record: {err}".format(err=err))
 
     def _api_client(self):
-        return _ApiClient(self.base_url, self.token, self.workspace)
+        return _ApiClient(self.base_url, self.token, self.workspace, self.domain_id)
 
 
 class _ApiClient:
-    def __init__(self, base_url, token, workspace):
+    def __init__(self, base_url, token, workspace, domain_id):
         """Initialize class managing a domain within Buddy API
 
         :param str base_url: API base URL
         :param str token: API token
         :param str workspace: API workspace domain
+        :param str domain_id: API domain ID
         """
         self.base_url = base_url
         self.token = token
         self.workspace = workspace
+        self.domain_id = domain_id
         self.session = requests.Session()
         self.session.headers.update({
             "Accept": "application/json",
@@ -116,7 +124,7 @@ class _ApiClient:
 
     def _get_record_value(self, name):
         try:
-            record = self._request("GET", "/workspaces/%s/domains/%s/records/TXT" % (self.workspace, name), None)
+            record = self._request("GET", "/workspaces/%s/domains/%s/records/%s/TXT" % (self.workspace, self.domain_id, name), None)
             return record["values"]
         except:
             return []
@@ -128,7 +136,7 @@ class _ApiClient:
         :param int ttl: optional ttl of record"""
         values = self._get_record_value(name)
         values.append(value)
-        self._request("PATCH", "/workspaces/%s/domains/%s/records/TXT" % (self.workspace, name), {
+        self._request("PATCH", "/workspaces/%s/domains/%s/records/%s/TXT" % (self.workspace, self.domain_id, name), {
             "values": values,
             "ttl": ttl
         })
@@ -142,9 +150,9 @@ class _ApiClient:
         if value in values:
             values.remove(value)
         if len(values) == 0:
-            self._request("DELETE", "/workspaces/%s/domains/%s/records/TXT" % (self.workspace, name), None)
+            self._request("DELETE", "/workspaces/%s/domains/%s/records/%s/TXT" % (self.workspace, self.domain_id, name), None)
         else:
-            self._request("PATCH", "/workspaces/%s/domains/%s/records/TXT" % (self.workspace, name), {
+            self._request("PATCH", "/workspaces/%s/domains/%s/records/%s/TXT" % (self.workspace, self.domain_id, name), {
                 "values": values,
                 "ttl": ttl
             })
