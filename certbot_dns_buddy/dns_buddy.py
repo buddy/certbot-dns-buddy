@@ -23,6 +23,7 @@ class Authenticator(dns_common.DNSAuthenticator):
         super().__init__(*args, **kwargs)
         self.token = ""
         self.base_url = ""
+        self.host_header = ""
         self.workspace = ""
         self.domain_id = ""
         self.credentials = None
@@ -40,6 +41,7 @@ class Authenticator(dns_common.DNSAuthenticator):
     def _setup_credentials(self):
         token = os.getenv("BUDDY_TOKEN")
         base_url = os.getenv("BUDDY_BASE_URL")
+        host_header = os.getenv("BUDDY_HOST_HEADER")
         workspace = os.getenv("BUDDY_WORKSPACE")
         domain_id = os.getenv("BUDDY_DOMAIN_ID")
         if token is None:
@@ -53,6 +55,7 @@ class Authenticator(dns_common.DNSAuthenticator):
             token = self.credentials.conf("token")
             workspace = self.credentials.conf("workspace")
             base_url = self.credentials.conf("base_url")
+            host_header = self.credentials.conf("host_header")
             domain_id = self.credentials.conf("domain_id")
         if token is None:
             raise errors.PluginError("Buddy API token not defined")
@@ -64,6 +67,7 @@ class Authenticator(dns_common.DNSAuthenticator):
             base_url = "https://api.buddy.works"
         self.token = token
         self.base_url = base_url
+        self.host_header = host_header
         self.workspace = workspace
         self.domain_id = domain_id
 
@@ -80,19 +84,21 @@ class Authenticator(dns_common.DNSAuthenticator):
             raise errors.PluginError("Cannot remove txt record: {err}".format(err=err))
 
     def _api_client(self):
-        return _ApiClient(self.base_url, self.token, self.workspace, self.domain_id)
+        return _ApiClient(self.base_url, self.token, self.workspace, self.domain_id, self.host_header)
 
 
 class _ApiClient:
-    def __init__(self, base_url, token, workspace, domain_id):
+    def __init__(self, base_url, token, workspace, domain_id, host_header):
         """Initialize class managing a domain within Buddy API
 
         :param str base_url: API base URL
         :param str token: API token
         :param str workspace: API workspace domain
         :param str domain_id: API domain ID
+        :param str host_header: API host header
         """
         self.base_url = base_url
+        self.host_header = host_header
         self.token = token
         self.workspace = workspace
         self.domain_id = domain_id
@@ -102,6 +108,10 @@ class _ApiClient:
             "Content-Type": "application/json",
             "Authorization": "Bearer {token}".format(token=self.token)
         })
+        if self.host_header is not None and self.host_header != "":
+            self.session.headers.update({
+                "Host": self.host_header
+            })
 
     def _request(self, method, url, payload):
         """Perform a POST request to Buddy API
@@ -116,9 +126,9 @@ class _ApiClient:
                     result = res.json()
                 except json.decoder.JSONDecodeError:
                     raise errors.PluginError("no JSON in API response")
-            if res.status_code == requests.codes.ok:
+            if res.status_code in (200, 201, 202, 203, 204):
                 return result
-            if result["errors"]:
+            if result.get("errors"):
                 raise errors.PluginError(result["errors"][0]["message"])
             raise errors.PluginError("something went wrong")
 
